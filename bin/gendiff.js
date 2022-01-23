@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import comparator from "../src/comparator.js";
+import comparator from '../src/comparator.js';
 
 program
   .version('0.0.1')
-  .description('Compares two configuration files and shows a difference.')
+  .description('Compares two configuration files and shows a difference.');
 
 program
   .option('-f, --format [type]', 'output format')
