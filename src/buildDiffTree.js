@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _ from 'lodash';
 
 const buildDiffTree = (data1, data2) => {
   const keys = _.sortBy(_.union(_.keys(data1), _.keys(data2)));
@@ -16,7 +16,7 @@ const buildDiffTree = (data1, data2) => {
     }
 
     if (_.isPlainObject(value1) && _.isPlainObject(value2)) {
-      return { key, status: 'nested', children: buildDiffTree(value1, value2)};
+      return { key, status: 'nested', children: buildDiffTree(value1, value2) };
     }
 
     if (_.isEqual(value1, value2)) {
@@ -31,7 +31,5 @@ const buildDiffTree = (data1, data2) => {
     };
   });
 };
-
-
 
 export default buildDiffTree;

@@ -23,16 +23,17 @@ const stringify = (data, depth) => {
   });
 
   return ['{', ...lines, `${makeIndent(depth + closeIndent)}}`].join('\n');
-}
+};
 
 export default (tree) => {
   const iter = (currentValue, depth) => {
+    console.log('Tree', tree);
     const lines = currentValue.map(({ key, status, value, oldValue, newValue, children }) => {
       switch (status) {
         case 'added':
-          return `${makeIndent(depth + INDENT_SIZE)}+ ${key}; ${stringify(
+          return `${makeIndent(depth + INDENT_SIZE)}+ ${key}: ${stringify(
             value,
-            depth
+            depth,
           )}`;
         case 'deleted':
           return `${makeIndent(depth + INDENT_SIZE)}- ${key}: ${stringify(
@@ -60,9 +61,9 @@ export default (tree) => {
         default:
           throw new Error(`Wrong type ${status}`);
       }
-    })
+    });
     return ['{', ...lines, `${makeIndent(depth)}}`].join('\n');
-  }
+  };
 
   return iter(tree, 0);
-}
+};
