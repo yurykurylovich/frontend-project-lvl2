@@ -1,17 +1,18 @@
+import fs from 'fs';
+import getFixturePath from "../src/getFixturePath.js";
 import comparator from '../src/comparator.js';
 
-const result = `{
-    host: hexlet.io
-  - timeout: 50
-  + timeout: 20
-  - proxy: 123.234.53.22
-  - follow: false
-  + verbose: true
-}`;
+let expectedData;
 
-test('🥝 compare flat json files:', () => {
-  expect(comparator('file1.json', 'file2.json')).toBe(result);
+beforeAll(() => {
+  expectedData = fs.readFileSync(getFixturePath('output.txt'), 'utf-8');
+})
+
+test('🥝 compare json files:', () => {
+  const actualData = comparator('file1.json', 'file2.json');
+  expect(actualData).toBe(expectedData);
 });
 test('🍋 compare flat yaml files:', () => {
-  expect(comparator('file1.yaml', 'file2.yaml')).toBe(result);
+  const actualData = comparator('file1.yaml', 'file2.yaml');
+  expect(actualData).toBe(expectedData);
 });
