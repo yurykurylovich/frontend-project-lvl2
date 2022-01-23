@@ -10,7 +10,7 @@ const stringify = (data, depth) => {
   if (!_.isPlainObject(data)) return data;
 
   const currentIndent = depth + INDENT_SIZE * BASE_INDENT;
-  const closeIndent = INDENT_SIZE + CLOSE_INDENT;
+  const closeIndent = INDENT_SIZE * CLOSE_INDENT;
 
   const lines = Object.entries(data).map(([key, value]) => {
     if (_.isPlainObject(value)) {
@@ -27,43 +27,41 @@ const stringify = (data, depth) => {
 
 export default (tree) => {
   const iter = (currentValue, depth) => {
-    console.log('Tree', tree);
-    const lines = currentValue.map(({ key, status, value, oldValue, newValue, children }) => {
-      switch (status) {
+    const lines = currentValue.map((line) => {
+      switch (line.status) {
         case 'added':
-          return `${makeIndent(depth + INDENT_SIZE)}+ ${key}: ${stringify(
-            value,
+          return `${makeIndent(depth + INDENT_SIZE)}+ ${line.key}: ${stringify(
+            line.value,
             depth,
           )}`;
         case 'deleted':
-          return `${makeIndent(depth + INDENT_SIZE)}- ${key}: ${stringify(
-            value,
+          return `${makeIndent(depth + INDENT_SIZE)}- ${line.key}: ${stringify(
+            line.value,
             depth,
           )}`;
         case 'changed':
-          return `${makeIndent(depth + INDENT_SIZE)}- ${key}: ${stringify(
-            oldValue,
+          return `${makeIndent(depth + INDENT_SIZE)}- ${line.key}: ${stringify(
+            line.oldValue,
             depth,
-          )}\n${makeIndent(depth + INDENT_SIZE)}+ ${key}: ${stringify(
-            newValue,
+          )}\n${makeIndent(depth + INDENT_SIZE)}+ ${line.key}: ${stringify(
+            line.newValue,
             depth,
           )}`;
         case 'unchanged':
-          return `${makeIndent(depth + INDENT_SIZE)}  ${key}: ${stringify(
-            value,
+          return `${makeIndent(depth + INDENT_SIZE)}  ${line.key}: ${stringify(
+            line.value,
             depth,
           )}`;
         case 'nested':
-          return `${makeIndent(depth + INDENT_SIZE)}  ${key}: ${iter(
-            children,
+          return `${makeIndent(depth + INDENT_SIZE)}  ${line.key}: ${iter(
+            line.children,
             depth + INDENT_SIZE * 2,
           )}`;
         default:
-          throw new Error(`Wrong type ${status}`);
+          throw new Error(`Wrong type ${line.status}`);
       }
     });
     return ['{', ...lines, `${makeIndent(depth)}}`].join('\n');
   };
-
   return iter(tree, 0);
 };
