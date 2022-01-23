@@ -9,6 +9,8 @@ install:
 # dev
 lint:
 	npx eslint .
+lint_fix:
+	npx eslint . --fix
 test:
 	npm test -s
 test_dev:
