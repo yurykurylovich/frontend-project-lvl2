@@ -1,67 +1,70 @@
 import _ from 'lodash';
 
-const INDENT_SIZE = 2;
-const BASE_INDENT = 4;
-const CLOSE_INDENT = 2;
+const createIndent = (level) => {
+  const replacer = '  ';
+  const spacesCount = 1;
+  const indentSize = level * spacesCount;
 
-const makeIndent = (n) => ' '.repeat(n);
+  const indents = {
+    openBracket: replacer.repeat(indentSize),
+    closeBracket: replacer.repeat(indentSize - spacesCount),
+  };
 
-const stringify = (data, depth) => {
-  if (!_.isPlainObject(data)) return data;
+  return indents;
+};
 
-  const currentIndent = depth + INDENT_SIZE * BASE_INDENT;
-  const closeIndent = INDENT_SIZE * CLOSE_INDENT;
+const stringify = (val, depth) => {
+  if (!_.isObject(val)) {
+    return val;
+  }
+  const indents = createIndent(depth);
 
-  const lines = Object.entries(data).map(([key, value]) => {
-    if (_.isPlainObject(value)) {
-      return `${makeIndent(currentIndent)}${key}: ${stringify(
-        value,
-        depth + closeIndent,
-      )}`;
+  const lines = Object.entries(val).map(([key, value]) => {
+    if (!_.isObject(value)) {
+      return `${indents.openBracket}  ${key}: ${value}`;
     }
-    return `${makeIndent(currentIndent)}${key}: ${value}`;
+
+    return `${indents.openBracket}  ${key}: ${stringify(value, depth + 2)}`;
   });
 
-  return ['{', ...lines, `${makeIndent(depth + closeIndent)}}`].join('\n');
+  return ['{', ...lines, `${indents.closeBracket}}`].join('\n');
 };
 
-export default (tree) => {
-  const iter = (currentValue, depth) => {
-    const lines = currentValue.map((line) => {
-      switch (line.status) {
-        case 'added':
-          return `${makeIndent(depth + INDENT_SIZE)}+ ${line.key}: ${stringify(
-            line.value,
-            depth,
-          )}`;
-        case 'deleted':
-          return `${makeIndent(depth + INDENT_SIZE)}- ${line.key}: ${stringify(
-            line.value,
-            depth,
-          )}`;
-        case 'changed':
-          return `${makeIndent(depth + INDENT_SIZE)}- ${line.key}: ${stringify(
+const makeStylishOutput = (currentValue, depth = 1) => {
+  const indents = createIndent(depth);
+
+  const lines = currentValue.map((line) => {
+    const makeValue = stringify(line.value, depth + 2);
+
+    switch (line.status) {
+      case 'added':
+        return [`${indents.openBracket}+ ${line.key}: ${makeValue}`];
+      case 'deleted':
+        return [`${indents.openBracket}- ${line.key}: ${makeValue}`];
+      case 'changed':
+        return [
+          `${indents.openBracket}- ${line.key}: ${stringify(
             line.oldValue,
-            depth,
-          )}\n${makeIndent(depth + INDENT_SIZE)}+ ${line.key}: ${stringify(
+            depth + 2,
+          )}\n${indents.openBracket}+ ${line.key}: ${stringify(
             line.newValue,
-            depth,
-          )}`;
-        case 'unchanged':
-          return `${makeIndent(depth + INDENT_SIZE)}  ${line.key}: ${stringify(
-            line.value,
-            depth,
-          )}`;
-        case 'nested':
-          return `${makeIndent(depth + INDENT_SIZE)}  ${line.key}: ${iter(
+            depth + 2,
+          )}`,
+        ].join('\n');
+      case 'unchanged':
+        return [`${indents.openBracket}  ${line.key}: ${makeValue}`];
+      case 'nested':
+        return [
+          `${indents.openBracket}  ${line.key}: ${makeStylishOutput(
             line.children,
-            depth + INDENT_SIZE * 2,
-          )}`;
-        default:
-          throw new Error(`Wrong type ${line.status}`);
-      }
-    });
-    return ['{', ...lines, `${makeIndent(depth)}}`].join('\n');
-  };
-  return iter(tree, 0);
+            depth + 2,
+          )}`,
+        ];
+      default:
+        throw new Error(`Wrong type: ${line.status}`);
+    }
+  });
+  return ['{', ...lines, `${indents.closeBracket}}`].join('\n');
 };
+
+export default makeStylishOutput;

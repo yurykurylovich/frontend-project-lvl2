@@ -3,37 +3,37 @@ import _ from 'lodash';
 const outputValue = (value) => {
   if (_.isPlainObject(value)) return '[complex value]';
   return typeof value === 'string' ? `'${value}'` : value;
-}
+};
 
 const makePlain = (tree) => {
   const iter = (currentValue, path) => {
     const lines = currentValue
       .filter(({ status }) => status !== 'unchanged')
-      .map(({ key, status, oldValue, newValue, children, value }) => {
-        const keys = [...path, key];
-        const property =  keys.join('.');
+      .map((line) => {
+        const keys = [...path, line.key];
+        const property = keys.join('.');
 
-        switch (status) {
+        switch (line.status) {
           case 'added':
             return `Property '${property}' was added with value: ${outputValue(
-              value,
+              line.value,
             )}`;
           case 'deleted':
             return `Property '${property}' was removed`;
           case 'changed':
             return `Property '${property}' was updated. From ${outputValue(
-              oldValue,
-            )} to ${outputValue(newValue)}`;
+              line.oldValue,
+            )} to ${outputValue(line.newValue)}`;
           case 'nested':
-            return iter(children, keys);
+            return iter(line.children, keys);
           default:
-            return `Wrong status: ${status}`;
+            throw new Error(`Wrong status: ${line.status}`);
         }
       });
     return lines.join('\n');
   };
 
-  return iter(tree, [])
-}
+  return iter(tree, []);
+};
 
 export default makePlain;

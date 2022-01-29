@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import comparator from '../src/comparator.js';
+import comparator from '../index.js';
 
 program
   .version('0.0.1')

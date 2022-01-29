@@ -1,23 +1,15 @@
-import path from 'path';
 import yaml from 'js-yaml';
-import readFile from './readFile.js';
 
-const getExtensionName = (file) => path.extname(file);
-
-const parseFile = (file) => {
-  const data = readFile(file);
-  const format = getExtensionName(file);
-  let parse;
-
-  if (format === '.json') {
-    parse = JSON.parse;
+const parseFile = (data, ext) => {
+  if (ext === 'json') {
+    return JSON.parse(data);
   }
 
-  if (format === '.yaml' || format === '.yml') {
-    parse = yaml.load;
+  if (ext === 'yaml' || ext === 'yml') {
+    return yaml.load(data);
   }
 
-  return parse(data);
+  return new Error('Invalid extension');
 };
 
 export default parseFile;
